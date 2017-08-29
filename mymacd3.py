@@ -74,46 +74,6 @@ def now_sell(exch,coin):
         SellBreak=1
         return False
 
-def get_purchase(exch,cash,coin):
-    #对冲什么鬼
-    # 如果上次是卖 
-    global LastType,LastPrice,LastAmount
-    # Log(LastType)
-    if  LastType=='buy':
-        #取得当前价
-        Log('这什么')
-        depth =exch.GetDepth()
-        
-        #对比LastPrice+delta和nowPrice
-        current_price=depth.Bids[0]['Price']
-        current_amount =depth.Bids[0]['Amount']
-        if current_price > LastPrice +delta:
-            Log(type(LastAmount))
-            amount= _N(min(LastAmount,coin,current_amount))
-            exchange.Sell(current_price,amount)
-            LastAmount=amount
-            LastPrice  = current_price
-            LastType = 'Sell'                    
-            Log('卖出价格%s卖出数量%s'%(current_price,amount))
-        else:
-            Log('差价不足%s'%delta)
-    elif LastType=='sell':
-    	Log('胡乱试')
-        depth =exch.GetDepth()
-        current_price = depth.Asks[0]['Price']
-        current_amount =depth.Bids[0]['Amount']
-        if current_price< LastPrice-delta:
-            number_of_shares = _N(cash/current_price,3)
-            #可购买时下单
-            amount= min(number_of_shares,LastAmount)
-            exchange.Buy(current_price,amount)
-            LastAmount=amount
-            LastPrice  = current_price
-            LastType = 'Buy'
-
-            Log('买入成交价%s成交量%s'%(current_price,amount))
-        else:
-            Log('差价不足%s'%delta)
 
 def get_MACD(exch):
     records =exch.GetRecords()
@@ -154,18 +114,17 @@ def buy_MACD(exch,cash,coin):
             Log('死叉卖出')
     elif macd_signal==0:
         #等待
-        # Log('尝试对冲')
-        # get_purchase(exch,cash,coin) 
         pass   
 
 
 
 def main():
+    Log("初始账户信息：",exchange.GetAccount() )   #  用于对比交易前后账户信息
     while True:
         account= exchange.GetAccount()
         money=account['Balance']
         stocks = account['Stocks']
-        # Log("初始账户信息：",account );   #  用于对比交易前后账户信息
+
         ticker = exchange.GetTicker()
         #Log("ticker:", ticker);  # 获取并打印行情
         LastTicker= ticker
